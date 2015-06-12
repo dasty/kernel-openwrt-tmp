@@ -139,6 +139,7 @@ config ATH79_MACH_DB120
 	bool "Atheros DB120 reference board"
 	select SOC_AR934X
 	select ATH79_DEV_AP9X_PCI if PCI
+	select ATH79_DEV_AUDIO
 	select ATH79_DEV_ETH
 	select ATH79_DEV_GPIO_BUTTONS
 	select ATH79_DEV_LEDS_GPIO
@@ -1273,5 +1274,7 @@ config ATH79_ROUTERBOOT
 
 config PCI_AR724X
 	def_bool n
+
+
 
 endif

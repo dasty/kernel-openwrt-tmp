@@ -18,6 +18,8 @@ obj-$(CONFIG_PCI)			+= pci.o
 #
 obj-y					+= dev-common.o
 obj-$(CONFIG_ATH79_DEV_AP9X_PCI)	+= dev-ap9x-pci.o
+# obj-$(CONFIG_ATH79_DEV_AUDIO)      += dev-audio.o
+obj-y      += dev-audio.o
 obj-$(CONFIG_ATH79_DEV_DSA)		+= dev-dsa.o
 obj-$(CONFIG_ATH79_DEV_ETH)		+= dev-eth.o
 obj-$(CONFIG_ATH79_DEV_GPIO_BUTTONS)	+= dev-gpio-buttons.o

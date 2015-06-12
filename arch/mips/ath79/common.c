@@ -1,6 +1,7 @@
 /*
  *  Atheros AR71XX/AR724X/AR913X common routines
  *
+ *  Copyright (c) 2013 The Linux Foundation. All rights reserved.
  *  Copyright (C) 2010-2011 Jaiganesh Narayanan <jnarayanan@atheros.com>
  *  Copyright (C) 2008-2011 Gabor Juhos <juhosg@openwrt.org>
  *  Copyright (C) 2008 Imre Kaloz <kaloz@openwrt.org>
@@ -37,6 +38,7 @@ enum ath79_soc_type ath79_soc;
 unsigned int ath79_soc_rev;
 
 void __iomem *ath79_pll_base;
+EXPORT_SYMBOL_GPL(ath79_pll_base);
 void __iomem *ath79_reset_base;
 EXPORT_SYMBOL_GPL(ath79_reset_base);
 void __iomem *ath79_ddr_base;

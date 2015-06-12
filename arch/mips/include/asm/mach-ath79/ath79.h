@@ -1,6 +1,7 @@
 /*
  *  Atheros AR71XX/AR724X/AR913X common definitions
  *
+ *  Copyright (c) 2013 The Linux Foundation. All rights reserved.
  *  Copyright (C) 2008-2011 Gabor Juhos <juhosg@openwrt.org>
  *  Copyright (C) 2008 Imre Kaloz <kaloz@openwrt.org>
  *
@@ -147,6 +148,10 @@ extern void __iomem *ath79_ddr_base;
 extern void __iomem *ath79_gpio_base;
 extern void __iomem *ath79_pll_base;
 extern void __iomem *ath79_reset_base;
+extern void __iomem *ath79_dma_base;
+extern void __iomem *ath79_stereo_base;
+extern void __iomem *ath79_audio_dpll_base;
+
 
 static inline void ath79_pll_wr(unsigned reg, u32 val)
 {
@@ -172,6 +177,38 @@ static inline u32 ath79_reset_rr(unsigned reg)
 void ath79_device_reset_set(u32 mask);
 void ath79_device_reset_clear(u32 mask);
 u32 ath79_device_reset_get(u32 mask);
+
+static inline void ath79_dma_wr(unsigned reg, u32 val)
+{
+	__raw_writel(val, ath79_dma_base + reg);
+}
+
+static inline u32 ath79_dma_rr(unsigned reg)
+{
+	return __raw_readl(ath79_dma_base + reg);
+}
+
+static inline void ath79_stereo_wr(unsigned reg, u32 val)
+{
+	__raw_writel(val, ath79_stereo_base + reg);
+}
+
+static inline u32 ath79_stereo_rr(unsigned reg)
+{
+	return __raw_readl(ath79_stereo_base + reg);
+}
+
+static inline void ath79_audio_dpll_wr(unsigned reg, u32 val)
+{
+	__raw_writel(val, ath79_audio_dpll_base + reg);
+}
+
+static inline u32 ath79_audio_dpll_rr(unsigned reg)
+{
+	return __raw_readl(ath79_audio_dpll_base + reg);
+}
+
+
 
 void ath79_flash_acquire(void);
 void ath79_flash_release(void);

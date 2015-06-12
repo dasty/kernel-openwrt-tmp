@@ -23,6 +23,9 @@
 #include <linux/platform_device.h>
 #include <linux/ath9k_platform.h>
 #include <linux/ar8216_platform.h>
+#include <linux/delay.h>
+#include <linux/gpio.h>
+
 
 #include <asm/mach-ath79/ar71xx_regs.h>
 
@@ -37,6 +40,9 @@
 #include "dev-usb.h"
 #include "dev-wmac.h"
 #include "machtypes.h"
+
+#include "dev-audio.h"
+#include "ath79.h"
 
 #define DB120_GPIO_LED_USB		11
 #define DB120_GPIO_LED_WLAN_5G		12
@@ -121,6 +127,7 @@ static struct ar8327_platform_data db120_ar8327_data = {
 	.led_cfg = &db120_ar8327_led_cfg,
 };
 
+
 static struct mdio_board_info db120_mdio0_info[] = {
 	{
 		.bus_id = "ag71xx-mdio.0",
@@ -129,9 +136,24 @@ static struct mdio_board_info db120_mdio0_info[] = {
 	},
 };
 
+
+static struct platform_device db120_tb388_spdif_codec = { 
+	.name       = "ath79-internal-codec",
+	.id     = -1, 
+};
+
+
+#define DB120_GPIO_I2S_MCLK     21
+#define DB120_GPIO_I2S_SD       19
+#define DB120_GPIO_I2S_WS       12
+#define DB120_GPIO_I2S_CLK      13
+#define DB120_GPIO_I2S_MIC_SD       14
+#define DB120_GPIO_SPDIF_OUT        15
+
 static void __init db120_setup(void)
 {
 	u8 *art = (u8 *) KSEG1ADDR(0x1fff0000);
+	u32 t;
 
 	ath79_gpio_output_select(DB120_GPIO_LED_USB, AR934X_GPIO_OUT_GPIO);
 	ath79_register_m25p80(NULL);
@@ -172,6 +194,48 @@ static void __init db120_setup(void)
 	ath79_register_eth(1);
 
 	ath79_register_nfc();
+
+
+
+
+	/* db120_tb388_audio_setup(); */
+    /* Reset I2S internal controller */
+    t = ath79_reset_rr(AR71XX_RESET_REG_RESET_MODULE);
+    ath79_reset_wr(AR71XX_RESET_REG_RESET_MODULE, t | AR934X_RESET_I2S );
+    udelay(1);
+
+    gpio_request(DB120_GPIO_I2S_CLK, "I2S CLK");
+    ath79_gpio_output_select(DB120_GPIO_I2S_CLK, AR934X_GPIO_OUT_MUX_I2S_CLK);
+    gpio_direction_output(DB120_GPIO_I2S_CLK, 0); 
+
+    gpio_request(DB120_GPIO_I2S_WS, "I2S WS");
+    ath79_gpio_output_select(DB120_GPIO_I2S_WS, AR934X_GPIO_OUT_MUX_I2S_WS);
+    gpio_direction_output(DB120_GPIO_I2S_WS, 0); 
+
+    gpio_request(DB120_GPIO_I2S_SD, "I2S SD");
+    ath79_gpio_output_select(DB120_GPIO_I2S_SD, AR934X_GPIO_OUT_MUX_I2S_SD);
+    gpio_direction_output(DB120_GPIO_I2S_SD, 0); 
+
+    gpio_request(DB120_GPIO_I2S_MCLK, "I2S MCLK");
+    ath79_gpio_output_select(DB120_GPIO_I2S_MCLK, AR934X_GPIO_OUT_MUX_I2S_MCK);
+    gpio_direction_output(DB120_GPIO_I2S_MCLK, 0); 
+
+    gpio_request(DB120_GPIO_SPDIF_OUT, "SPDIF OUT");
+    ath79_gpio_output_select(DB120_GPIO_SPDIF_OUT, AR934X_GPIO_OUT_MUX_SPDIF_OUT);
+    gpio_direction_output(DB120_GPIO_SPDIF_OUT, 0); 
+
+    gpio_request(DB120_GPIO_I2S_MIC_SD, "I2S MIC_SD");
+    ath79_gpio_input_select(DB120_GPIO_I2S_MIC_SD, AR934X_GPIO_IN_MUX_I2S_MIC_SD);
+    gpio_direction_input(DB120_GPIO_I2S_MIC_SD);
+
+	ath79_audio_setup();
+
+
+
+
+
+	platform_device_register(&db120_tb388_spdif_codec);
+	ath79_audio_device_register();
 }
 
 MIPS_MACHINE(ATH79_MACH_DB120, "DB120", "Atheros DB120 reference board",

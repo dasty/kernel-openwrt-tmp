@@ -1,6 +1,7 @@
 /*
  *  Atheros AR71XX/AR724X/AR913X common definitions
  *
+ *  Copyright (c) 2013 The Linux Foundation. All rights reserved.
  *  Copyright (C) 2008-2011 Gabor Juhos <juhosg@openwrt.org>
  *  Copyright (C) 2008 Imre Kaloz <kaloz@openwrt.org>
  *
@@ -27,6 +28,7 @@ void ath79_ddr_wb_flush(unsigned int reg);
 void ath79_gpio_function_enable(u32 mask);
 void ath79_gpio_function_disable(u32 mask);
 void ath79_gpio_function_setup(u32 set, u32 clear);
+void ath79_gpio_input_select(unsigned gpio, u8 val);
 void ath79_gpio_output_select(unsigned gpio, u8 val);
 void ath79_gpio_init(void);
 
