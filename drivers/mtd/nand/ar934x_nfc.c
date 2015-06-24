@@ -1114,7 +1114,8 @@ ar934x_nfc_irq_handler(int irq, void *data)
 		if (nfc->spurious_irq_expected) {
 			nfc->spurious_irq_expected = false;
 		} else {
-			dev_warn(nfc->parent, "spurious interrupt\n");
+			/* TODO: Investigate the cause of this message. */
+			/* dev_warn(nfc->parent, "spurious interrupt\n"); */
 		}
 	}
 
