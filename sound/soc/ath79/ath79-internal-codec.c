@@ -36,7 +36,8 @@ static struct snd_soc_dai_driver ath79_codec_dai = {
 				SNDRV_PCM_RATE_44100 |
 				SNDRV_PCM_RATE_48000 |
 				SNDRV_PCM_RATE_88200 |
-				SNDRV_PCM_RATE_96000,
+				SNDRV_PCM_RATE_96000 |
+				SNDRV_PCM_RATE_192000,
 		.formats = SNDRV_PCM_FMTBIT_S8 |
 				SNDRV_PCM_FMTBIT_S16 |
 				SNDRV_PCM_FMTBIT_S24 |

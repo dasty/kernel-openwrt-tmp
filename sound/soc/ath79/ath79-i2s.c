@@ -81,7 +81,7 @@ static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 {
 	u32 mask = 0, t;
 
-	printk("Called %s\n", __FUNCTION__);
+	printk("Called %s with rate %d\n", __FUNCTION__, params_rate(params));
 
 	ath79_audio_set_freq(params_rate(params));
 
@@ -146,7 +146,8 @@ static struct snd_soc_dai_driver ath79_i2s_dai = {
 		.rates = SNDRV_PCM_RATE_44100 |
 				SNDRV_PCM_RATE_48000 |
 				SNDRV_PCM_RATE_88200 |
-				SNDRV_PCM_RATE_96000,
+				SNDRV_PCM_RATE_96000 |
+				SNDRV_PCM_RATE_192000,
 /* For now, we'll just support 8 and 16bits as 32 bits is really noisy
  * for some reason */
 		.formats = SNDRV_PCM_FMTBIT_S8 |

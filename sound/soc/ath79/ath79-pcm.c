@@ -51,9 +51,10 @@ static struct snd_pcm_hardware ath79_pcm_hardware = {
 			SNDRV_PCM_RATE_44100 |
 			SNDRV_PCM_RATE_48000 |
 			SNDRV_PCM_RATE_88200 |
-			SNDRV_PCM_RATE_96000,
+			SNDRV_PCM_RATE_96000 |
+			SNDRV_PCM_RATE_192000,
 	.rate_min = 22050,
-	.rate_max = 96000,
+	.rate_max = 192000,
 	.channels_min = 2,
 	.channels_max = 2,
 	/* These numbers are empirical. As the DMA engine is descriptor base
