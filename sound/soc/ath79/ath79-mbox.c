@@ -165,8 +165,9 @@ int ath79_mbox_dma_map(struct ath79_pcm_rt_priv *rtpriv, dma_addr_t baseaddr,
 	/* We loop until we have enough buffers to map the requested DMA area */
 	do {
 		/* Allocate a descriptor and insert it into the DMA ring */
-		desc = dma_pool_alloc(ath79_pcm_cache, GFP_KERNEL, &desc_p);
+		desc = dma_pool_alloc(ath79_pcm_cache, GFP_ATOMIC, &desc_p);
 		if(!desc) {
+			spin_unlock(&ath79_pcm_lock);
 			return -ENOMEM;
 		}
 		memset(desc, 0, sizeof(struct ath79_pcm_desc));
@@ -229,6 +230,8 @@ void ath79_mbox_dma_unmap(struct ath79_pcm_rt_priv *rtpriv)
 int ath79_mbox_dma_init(struct device *dev)
 {
 	int ret = 0;
+
+	spin_lock_init(&ath79_pcm_lock);
 
 	/* Allocate a DMA pool to store the MBOX descriptor */
 	ath79_pcm_cache = dma_pool_create("ath79_pcm_pool", dev,

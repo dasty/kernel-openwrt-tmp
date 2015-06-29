@@ -113,6 +113,7 @@ static inline struct ath79_pcm_desc *ath79_pcm_get_last_played(struct ath79_pcm_
 	prev = list_entry(rtpriv->dma_head.prev, struct ath79_pcm_desc, list);
 	list_for_each_entry(desc, &rtpriv->dma_head, list) {
 		if (desc->OWN == 1 && prev->OWN == 0) {
+			spin_unlock(&ath79_pcm_lock);
 			return desc;
 		}
 		prev = desc;
