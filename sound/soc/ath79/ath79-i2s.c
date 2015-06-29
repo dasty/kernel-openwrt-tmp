@@ -83,6 +83,11 @@ static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 
 	printk("Called %s with rate %d\n", __FUNCTION__, params_rate(params));
 
+	if (dai->capture_active && dai->playback_active) {
+		printk("Previous playback or capture running, skipping reconfiguration\n");
+		return 0;
+	}
+
 	ath79_audio_set_freq(params_rate(params));
 
 	switch(params_format(params)) {
@@ -155,12 +160,13 @@ static struct snd_soc_dai_driver ath79_i2s_dai = {
 		},
 	.capture = {
 		.stream_name = "ath79-i2s capture",
-		.channels_min = 1,
+		.channels_min = 2,
 		.channels_max = 2,
 		.rates = SNDRV_PCM_RATE_44100 |
 				SNDRV_PCM_RATE_48000 |
 				SNDRV_PCM_RATE_88200 |
-				SNDRV_PCM_RATE_96000,
+				SNDRV_PCM_RATE_96000 |
+				SNDRV_PCM_RATE_192000,
 /* For now, we'll just support 8 and 16bits as 32 bits is really noisy
  * for some reason */
 		.formats = SNDRV_PCM_FMTBIT_S8 |
