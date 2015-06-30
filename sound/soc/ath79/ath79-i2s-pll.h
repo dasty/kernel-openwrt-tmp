@@ -30,4 +30,5 @@ struct ath79_pll_config {
 	int shift;		/* AUDIO_DPLL3			29:23 */
 };
 
+void ath79_stereo_set_posedge(u32 posedge);
 int ath79_audio_set_freq(int);

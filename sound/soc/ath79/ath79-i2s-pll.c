@@ -32,6 +32,7 @@
 
 static DEFINE_SPINLOCK(ath79_pll_lock);
 
+/* TODO: We probably should configure the MCLK to be 24576000Hz/22579200Hz for all sample rates */
 static const struct ath79_pll_config pll_cfg_25MHz[] = {
 	/* Freq		divint	divfrac		ppllpwd	bypass	extdiv	refdiv	PS	ki	kd	shift */
 	/* 		-----------------------PLL----------------------------	STEREO	--------DPLL--------- */
@@ -211,7 +212,7 @@ static u32 ath79_audiodpll_sqsum_dvc_get(void)
 	return t;
 }
 
-static void ath79_stereo_set_posedge(u32 posedge)
+void ath79_stereo_set_posedge(u32 posedge)
 {
 	u32 t;
 

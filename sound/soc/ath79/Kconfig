@@ -20,6 +20,14 @@ config SND_ATH79_SOC
 	  Say Y or M if you want to add support for ath79 platforms
 	  You will also need to select the board in the options below.
 
+config SND_ATH79_SOC_USE_EXTERNAL_MCLK
+	bool "ath79 external MCLK"
+	depends on SND_ATH79_SOC
+	help
+	  Enable this option to use the external MCLK instead of the internal
+	  PLL. Currently there is no possibility to switch the external PLL
+	  between two different master clocks.
+
 config SND_ATH79_SOC_I2S
 	tristate
 

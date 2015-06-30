@@ -216,9 +216,15 @@ static void __init db120_setup(void)
     ath79_gpio_output_select(DB120_GPIO_I2S_SD, AR934X_GPIO_OUT_MUX_I2S_SD);
     gpio_direction_output(DB120_GPIO_I2S_SD, 0); 
 
+#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
+    gpio_request(DB120_GPIO_I2S_MCLK, "I2S MCLK");
+    ath79_gpio_input_select(DB120_GPIO_I2S_MCLK, AR934X_GPIO_IN_MUX_I2S_MCK);
+    gpio_direction_input(DB120_GPIO_I2S_MCLK);
+#else
     gpio_request(DB120_GPIO_I2S_MCLK, "I2S MCLK");
     ath79_gpio_output_select(DB120_GPIO_I2S_MCLK, AR934X_GPIO_OUT_MUX_I2S_MCK);
-    gpio_direction_output(DB120_GPIO_I2S_MCLK, 0); 
+    gpio_direction_output(DB120_GPIO_I2S_MCLK, 0);
+#endif
 
     gpio_request(DB120_GPIO_SPDIF_OUT, "SPDIF OUT");
     ath79_gpio_output_select(DB120_GPIO_SPDIF_OUT, AR934X_GPIO_OUT_MUX_SPDIF_OUT);

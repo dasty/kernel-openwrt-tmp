@@ -50,11 +50,16 @@ static int ath79_i2s_startup(struct snd_pcm_substream *substream,
 {
 	/* Enable I2S and SPDIF by default */
 	if (!dai->active) {
-		ath79_stereo_wr(AR934X_STEREO_REG_CONFIG,
-				AR934X_STEREO_CONFIG_SPDIF_ENABLE |
-				AR934X_STEREO_CONFIG_I2S_ENABLE |
-				AR934X_STEREO_CONFIG_SAMPLE_CNT_CLEAR_TYPE |
-				AR934X_STEREO_CONFIG_MASTER);
+		unsigned stereo_config = AR934X_STEREO_CONFIG_SPDIF_ENABLE |
+									AR934X_STEREO_CONFIG_I2S_ENABLE |
+									AR934X_STEREO_CONFIG_SAMPLE_CNT_CLEAR_TYPE |
+									AR934X_STEREO_CONFIG_MASTER;
+
+#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
+		stereo_config |= AR934X_STEREO_CONFIG_MCK_SEL;
+#endif
+
+		ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, stereo_config);
 		ath79_stereo_reset();
 	}
 	return 0;
@@ -75,6 +80,46 @@ static int ath79_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 	return 0;
 }
 
+#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
+/*
+ * This table is only valid for a MCLK of 24576000Hz or 22579200Hz.
+ * See also datasheet AR9344.pdf page 205.
+ * TODO: Make this a real calculation based on the actual MCLK rate,
+ *       channel size and rate.
+ */
+static u32 calculate_posedge(struct snd_pcm_hw_params *params)
+{
+	switch(params_rate(params)) {
+		case 22050:
+			return 8;
+			break;
+
+		case 32000:
+			return 6;
+			break;
+
+		case 44100:
+		case 48000:
+			return 4;
+			break;
+
+		case 88200:
+		case 96000:
+			return 2;
+			break;
+
+		case 192000:
+			return 1;
+			break;
+
+		default:
+			printk("Undefined POSEDGE value for a rate of %u, using fallback value of 4\n", params_rate(params));
+			return 4;
+			break;
+	}
+}
+#endif
+
 static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
 				struct snd_soc_dai *dai)
@@ -88,7 +133,14 @@ static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 		return 0;
 	}
 
+#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
+	/* TODO: Implement the switching of an external PLL and remove this printk() */
+	printk("Using external MCLK, no PLL switching implemented.\n");
+
+	ath79_stereo_set_posedge(calculate_posedge(params));
+#else
 	ath79_audio_set_freq(params_rate(params));
+#endif
 
 	switch(params_format(params)) {
 	case SNDRV_PCM_FORMAT_S8:
