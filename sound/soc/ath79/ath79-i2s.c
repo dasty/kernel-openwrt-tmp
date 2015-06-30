@@ -205,10 +205,10 @@ static struct snd_soc_dai_driver ath79_i2s_dai = {
 				SNDRV_PCM_RATE_88200 |
 				SNDRV_PCM_RATE_96000 |
 				SNDRV_PCM_RATE_192000,
-/* For now, we'll just support 8 and 16bits as 32 bits is really noisy
- * for some reason */
+
 		.formats = SNDRV_PCM_FMTBIT_S8 |
-			SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_LE,
+			SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_LE |
+			SNDRV_PCM_FMTBIT_S32_BE | SNDRV_PCM_FMTBIT_S32_LE,
 		},
 	.capture = {
 		.stream_name = "ath79-i2s capture",
@@ -219,10 +219,10 @@ static struct snd_soc_dai_driver ath79_i2s_dai = {
 				SNDRV_PCM_RATE_88200 |
 				SNDRV_PCM_RATE_96000 |
 				SNDRV_PCM_RATE_192000,
-/* For now, we'll just support 8 and 16bits as 32 bits is really noisy
- * for some reason */
+
 		.formats = SNDRV_PCM_FMTBIT_S8 |
-			SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_LE,
+			SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_LE |
+			SNDRV_PCM_FMTBIT_S32_BE | SNDRV_PCM_FMTBIT_S32_LE,
 		},
 	.ops = &ath79_i2s_dai_ops,
 };
