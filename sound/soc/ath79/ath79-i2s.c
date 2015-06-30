@@ -159,6 +159,7 @@ static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 		mask |= AR934X_STEREO_CONFIG_DATA_WORD_24
 			<< AR934X_STEREO_CONFIG_DATA_WORD_SIZE_SHIFT;
 		mask |= AR934X_STEREO_CONFIG_I2S_WORD_SIZE;
+		mask |= AR934X_STEREO_CONFIG_MIC_WORD_SIZE;
 		break;
 	case SNDRV_PCM_FORMAT_S32_LE:
 		mask |= AR934X_STEREO_CONFIG_PCM_SWAP;
@@ -166,6 +167,7 @@ static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 		mask |= AR934X_STEREO_CONFIG_DATA_WORD_32
 			<< AR934X_STEREO_CONFIG_DATA_WORD_SIZE_SHIFT;
 		mask |= AR934X_STEREO_CONFIG_I2S_WORD_SIZE;
+		mask |= AR934X_STEREO_CONFIG_MIC_WORD_SIZE;
 		break;
 	default:
 		printk(KERN_ERR "%s: Format %d not supported\n",
@@ -178,6 +180,7 @@ static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 	t &= ~(AR934X_STEREO_CONFIG_DATA_WORD_SIZE_MASK
 		<< AR934X_STEREO_CONFIG_DATA_WORD_SIZE_SHIFT);
 	t &= ~(AR934X_STEREO_CONFIG_I2S_WORD_SIZE);
+	t &= ~(AR934X_STEREO_CONFIG_MIC_WORD_SIZE);
 	t |= mask;
 	ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, t);
 	spin_unlock(&ath79_stereo_lock);
