@@ -196,49 +196,42 @@ static void __init db120_setup(void)
 	ath79_register_nfc();
 
 
+/* Reset I2S internal controller */
+	t = ath79_reset_rr(AR71XX_RESET_REG_RESET_MODULE);
+	ath79_reset_wr(AR71XX_RESET_REG_RESET_MODULE, t | AR934X_RESET_I2S );
+	udelay(1);
 
+	gpio_request(DB120_GPIO_I2S_CLK, "I2S CLK");
+	ath79_gpio_output_select(DB120_GPIO_I2S_CLK, AR934X_GPIO_OUT_MUX_I2S_CLK);
+	gpio_direction_output(DB120_GPIO_I2S_CLK, 0);
 
-	/* db120_tb388_audio_setup(); */
-    /* Reset I2S internal controller */
-    t = ath79_reset_rr(AR71XX_RESET_REG_RESET_MODULE);
-    ath79_reset_wr(AR71XX_RESET_REG_RESET_MODULE, t | AR934X_RESET_I2S );
-    udelay(1);
+	gpio_request(DB120_GPIO_I2S_WS, "I2S WS");
+	ath79_gpio_output_select(DB120_GPIO_I2S_WS, AR934X_GPIO_OUT_MUX_I2S_WS);
+	gpio_direction_output(DB120_GPIO_I2S_WS, 0);
 
-    gpio_request(DB120_GPIO_I2S_CLK, "I2S CLK");
-    ath79_gpio_output_select(DB120_GPIO_I2S_CLK, AR934X_GPIO_OUT_MUX_I2S_CLK);
-    gpio_direction_output(DB120_GPIO_I2S_CLK, 0); 
-
-    gpio_request(DB120_GPIO_I2S_WS, "I2S WS");
-    ath79_gpio_output_select(DB120_GPIO_I2S_WS, AR934X_GPIO_OUT_MUX_I2S_WS);
-    gpio_direction_output(DB120_GPIO_I2S_WS, 0); 
-
-    gpio_request(DB120_GPIO_I2S_SD, "I2S SD");
-    ath79_gpio_output_select(DB120_GPIO_I2S_SD, AR934X_GPIO_OUT_MUX_I2S_SD);
-    gpio_direction_output(DB120_GPIO_I2S_SD, 0); 
+	gpio_request(DB120_GPIO_I2S_SD, "I2S SD");
+	ath79_gpio_output_select(DB120_GPIO_I2S_SD, AR934X_GPIO_OUT_MUX_I2S_SD);
+	gpio_direction_output(DB120_GPIO_I2S_SD, 0);
 
 #ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
-    gpio_request(DB120_GPIO_I2S_MCLK, "I2S MCLK");
-    ath79_gpio_input_select(DB120_GPIO_I2S_MCLK, AR934X_GPIO_IN_MUX_I2S_MCK);
-    gpio_direction_input(DB120_GPIO_I2S_MCLK);
+	gpio_request(DB120_GPIO_I2S_MCLK, "I2S MCLK");
+	ath79_gpio_input_select(DB120_GPIO_I2S_MCLK, AR934X_GPIO_IN_MUX_I2S_MCK);
+	gpio_direction_input(DB120_GPIO_I2S_MCLK);
 #else
-    gpio_request(DB120_GPIO_I2S_MCLK, "I2S MCLK");
-    ath79_gpio_output_select(DB120_GPIO_I2S_MCLK, AR934X_GPIO_OUT_MUX_I2S_MCK);
-    gpio_direction_output(DB120_GPIO_I2S_MCLK, 0);
+	gpio_request(DB120_GPIO_I2S_MCLK, "I2S MCLK");
+	ath79_gpio_output_select(DB120_GPIO_I2S_MCLK, AR934X_GPIO_OUT_MUX_I2S_MCK);
+	gpio_direction_output(DB120_GPIO_I2S_MCLK, 0);
 #endif
 
-    gpio_request(DB120_GPIO_SPDIF_OUT, "SPDIF OUT");
-    ath79_gpio_output_select(DB120_GPIO_SPDIF_OUT, AR934X_GPIO_OUT_MUX_SPDIF_OUT);
-    gpio_direction_output(DB120_GPIO_SPDIF_OUT, 0); 
+	gpio_request(DB120_GPIO_SPDIF_OUT, "SPDIF OUT");
+	ath79_gpio_output_select(DB120_GPIO_SPDIF_OUT, AR934X_GPIO_OUT_MUX_SPDIF_OUT);
+	gpio_direction_output(DB120_GPIO_SPDIF_OUT, 0);
 
-    gpio_request(DB120_GPIO_I2S_MIC_SD, "I2S MIC_SD");
-    ath79_gpio_input_select(DB120_GPIO_I2S_MIC_SD, AR934X_GPIO_IN_MUX_I2S_MIC_SD);
-    gpio_direction_input(DB120_GPIO_I2S_MIC_SD);
+	gpio_request(DB120_GPIO_I2S_MIC_SD, "I2S MIC_SD");
+	ath79_gpio_input_select(DB120_GPIO_I2S_MIC_SD, AR934X_GPIO_IN_MUX_I2S_MIC_SD);
+	gpio_direction_input(DB120_GPIO_I2S_MIC_SD);
 
 	ath79_audio_setup();
-
-
-
-
 
 	platform_device_register(&db120_tb388_spdif_codec);
 	ath79_audio_device_register();
