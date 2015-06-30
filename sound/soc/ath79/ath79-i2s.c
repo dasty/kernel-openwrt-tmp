@@ -68,9 +68,13 @@ static int ath79_i2s_startup(struct snd_pcm_substream *substream,
 static void ath79_i2s_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
+
+#ifndef CONFIG_SND_ATH79_SOC_PERSISTENT_CLOCKS
 	if (!dai->active) {
 		ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, 0);
 	}
+#endif
+
 	return;
 }
 
@@ -240,7 +244,32 @@ static const struct snd_soc_component_driver ath79_i2s_component = {
 
 static int ath79_i2s_drv_probe(struct platform_device *pdev)
 {
+	u32 stereo_config = 0;
+
 	spin_lock_init(&ath79_stereo_lock);
+
+#ifdef CONFIG_SND_ATH79_SOC_PERSISTENT_CLOCKS
+	stereo_config |= AR934X_STEREO_CONFIG_SPDIF_ENABLE |
+						AR934X_STEREO_CONFIG_I2S_ENABLE |
+						AR934X_STEREO_CONFIG_SAMPLE_CNT_CLEAR_TYPE |
+						AR934X_STEREO_CONFIG_MASTER;
+
+	#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
+	stereo_config |= AR934X_STEREO_CONFIG_MCK_SEL;
+	#endif
+
+	ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, stereo_config);
+
+
+	#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
+	ath79_stereo_set_posedge(4);
+	#else
+	ath79_audio_set_freq(48000);
+	#endif
+
+
+	ath79_stereo_reset();
+#endif
 
 	return devm_snd_soc_register_component(&pdev->dev, &ath79_i2s_component, &ath79_i2s_dai, 1);
 }

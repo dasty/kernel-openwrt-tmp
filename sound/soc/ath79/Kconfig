@@ -28,6 +28,13 @@ config SND_ATH79_SOC_USE_EXTERNAL_MCLK
 	  PLL. Currently there is no possibility to switch the external PLL
 	  between two different master clocks.
 
+config SND_ATH79_SOC_PERSISTENT_CLOCKS
+	bool "ath79 persistent clocks"
+	depends on SND_ATH79_SOC
+	help
+	  Enable this option to start the I2S clocks (WCLK, BCLK, MCLK) already
+	  on boot and to keep them running after playback has stopped.
+
 config SND_ATH79_SOC_I2S
 	tristate
 
