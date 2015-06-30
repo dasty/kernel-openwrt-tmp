@@ -39,13 +39,12 @@ static struct snd_soc_dai_driver ath79_codec_dai = {
 				SNDRV_PCM_RATE_96000 |
 				SNDRV_PCM_RATE_192000,
 		.formats = SNDRV_PCM_FMTBIT_S8 |
-				SNDRV_PCM_FMTBIT_S16 |
-				SNDRV_PCM_FMTBIT_S24 |
-				SNDRV_PCM_FMTBIT_S32,
+				SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_LE |
+				SNDRV_PCM_FMTBIT_S32_BE | SNDRV_PCM_FMTBIT_S32_LE,
 		},
 	.capture = {
 		.stream_name = "ath79 capture",
-		.channels_min = 1,
+		.channels_min = 2,
 		.channels_max = 2,
 		.rates = SNDRV_PCM_RATE_22050 |
 				SNDRV_PCM_RATE_32000 |
@@ -55,9 +54,8 @@ static struct snd_soc_dai_driver ath79_codec_dai = {
 				SNDRV_PCM_RATE_96000 |
 				SNDRV_PCM_RATE_192000,
 		.formats = SNDRV_PCM_FMTBIT_S8 |
-				SNDRV_PCM_FMTBIT_S16 |
-				SNDRV_PCM_FMTBIT_S24 |
-				SNDRV_PCM_FMTBIT_S32,
+				SNDRV_PCM_FMTBIT_S16_BE | SNDRV_PCM_FMTBIT_S16_LE |
+				SNDRV_PCM_FMTBIT_S32_BE | SNDRV_PCM_FMTBIT_S32_LE,
 		},
 };
 
