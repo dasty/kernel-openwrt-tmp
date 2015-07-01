@@ -55,9 +55,8 @@ static int ath79_i2s_startup(struct snd_pcm_substream *substream,
 									AR934X_STEREO_CONFIG_SAMPLE_CNT_CLEAR_TYPE |
 									AR934X_STEREO_CONFIG_MASTER;
 
-#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
-		stereo_config |= AR934X_STEREO_CONFIG_MCK_SEL;
-#endif
+		if (IS_ENABLED(CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK))
+			stereo_config |= AR934X_STEREO_CONFIG_MCK_SEL;
 
 		ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, stereo_config);
 		ath79_stereo_reset();
@@ -69,11 +68,10 @@ static void ath79_i2s_shutdown(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
 
-#ifndef CONFIG_SND_ATH79_SOC_PERSISTENT_CLOCKS
 	if (!dai->active) {
-		ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, 0);
+		if (!IS_ENABLED(CONFIG_SND_ATH79_SOC_PERSISTENT_CLOCKS))
+			ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, 0);
 	}
-#endif
 
 	return;
 }
@@ -84,14 +82,13 @@ static int ath79_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 	return 0;
 }
 
-#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
 /*
  * This table is only valid for a MCLK of 24576000Hz or 22579200Hz.
  * See also datasheet AR9344.pdf page 205.
  * TODO: Make this a real calculation based on the actual MCLK rate,
  *       channel size and rate.
  */
-static u32 calculate_posedge(struct snd_pcm_hw_params *params)
+static u32 ath79_i2s_calculate_posedge(struct snd_pcm_hw_params *params)
 {
 	switch(params_rate(params)) {
 		case 22050:
@@ -122,7 +119,6 @@ static u32 calculate_posedge(struct snd_pcm_hw_params *params)
 			break;
 	}
 }
-#endif
 
 static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 				struct snd_pcm_hw_params *params,
@@ -137,14 +133,14 @@ static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 		return 0;
 	}
 
-#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
-	/* TODO: Implement the switching of an external PLL and remove this printk() */
-	printk("Using external MCLK, no PLL switching implemented.\n");
+	if (IS_ENABLED(CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK)) {
+		/* TODO: Implement the switching of an external PLL and remove this printk() */
+		printk("Using external MCLK, no PLL switching implemented.\n");
 
-	ath79_stereo_set_posedge(calculate_posedge(params));
-#else
-	ath79_audio_set_freq(params_rate(params));
-#endif
+		ath79_stereo_set_posedge(ath79_i2s_calculate_posedge(params));
+	} else {
+		ath79_audio_set_freq(params_rate(params));
+	}
 
 	switch(params_format(params)) {
 	case SNDRV_PCM_FORMAT_S8:
@@ -248,28 +244,26 @@ static int ath79_i2s_drv_probe(struct platform_device *pdev)
 
 	spin_lock_init(&ath79_stereo_lock);
 
-#ifdef CONFIG_SND_ATH79_SOC_PERSISTENT_CLOCKS
-	stereo_config |= AR934X_STEREO_CONFIG_SPDIF_ENABLE |
-						AR934X_STEREO_CONFIG_I2S_ENABLE |
-						AR934X_STEREO_CONFIG_SAMPLE_CNT_CLEAR_TYPE |
-						AR934X_STEREO_CONFIG_MASTER;
+	if (IS_ENABLED(CONFIG_SND_ATH79_SOC_PERSISTENT_CLOCKS)) {
+		stereo_config |= AR934X_STEREO_CONFIG_SPDIF_ENABLE |
+							AR934X_STEREO_CONFIG_I2S_ENABLE |
+							AR934X_STEREO_CONFIG_SAMPLE_CNT_CLEAR_TYPE |
+							AR934X_STEREO_CONFIG_MASTER;
 
-	#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
-	stereo_config |= AR934X_STEREO_CONFIG_MCK_SEL;
-	#endif
+		if (IS_ENABLED(CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK))
+			stereo_config |= AR934X_STEREO_CONFIG_MCK_SEL;
 
-	ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, stereo_config);
-
-
-	#ifdef CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK
-	ath79_stereo_set_posedge(4);
-	#else
-	ath79_audio_set_freq(48000);
-	#endif
+		ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, stereo_config);
 
 
-	ath79_stereo_reset();
-#endif
+		if (IS_ENABLED(CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK))
+			ath79_stereo_set_posedge(4);
+		else
+			ath79_audio_set_freq(48000);
+
+
+		ath79_stereo_reset();
+	}
 
 	return devm_snd_soc_register_component(&pdev->dev, &ath79_i2s_component, &ath79_i2s_dai, 1);
 }
