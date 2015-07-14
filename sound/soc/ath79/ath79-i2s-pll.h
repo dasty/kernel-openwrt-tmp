@@ -16,19 +16,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-struct ath79_pll_config {
-	int rate;		/* Stream frequency */
-	int divint;		/* AUDIO_PLL_MODULATION		06:01 */
-	int divfrac;		/* AUDIO_PLL_MODULATION		28:11 */
-	int postpllpwd;		/* AUDIO_PLL_CONFIG		09:07 */
-	int bypass;		/* AUDIO_PLL_CONFIG		04    */
-	int extdiv;		/* AUDIO_PLL_CONFIG		14:12 */
-	int refdiv;		/* AUDIO_PLL_CONFIG		03:00 */
-	int posedge;		/* STEREO_CONFIG		07:00 */
-	int ki;			/* AUDIO_DPLL2			29:26 */
-	int kd;			/* AUDIO_DPLL2			25:19 */
-	int shift;		/* AUDIO_DPLL3			29:23 */
-};
-
-void ath79_stereo_set_posedge(u32 posedge);
 int ath79_audio_set_freq(int);

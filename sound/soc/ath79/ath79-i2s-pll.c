@@ -32,30 +32,9 @@
 
 static DEFINE_SPINLOCK(ath79_pll_lock);
 
-/* TODO: We probably should configure the MCLK to be 24576000Hz/22579200Hz for all sample rates */
-static const struct ath79_pll_config pll_cfg_25MHz[] = {
-	/* Freq		divint	divfrac		ppllpwd	bypass	extdiv	refdiv	PS	ki	kd	shift */
-	/* 		-----------------------PLL----------------------------	STEREO	--------DPLL--------- */
-	{ 22050,	0x15,	0x2B442,	0x3,	0,	0x6,	0x1,	3,	0x4,	0x3d,	0x6 },
-	{ 32000,	0x17,	0x24F76,	0x3,	0,	0x6,	0x1,	3,	0x4,	0x3d,	0x6 },
-	{ 44100,	0x15,	0x2B442,	0x3,	0,	0x6,	0x1,	2,	0x4,	0x3d,	0x6 },
-	{ 48000,	0x17,	0x24F76,	0x3,	0,	0x6,	0x1,	2,	0x4,	0x3d,	0x6 },
-	{ 88200,	0x15,	0x2B442,	0x3,	0,	0x6,	0x1,	1,	0x4,	0x3d,	0x6 },
-	{ 96000,	0x17,	0x24F76,	0x3,	0,	0x6,	0x1,	1,	0x4,	0x3d,	0x6 },
-	{ 192000,	0x0F,	0x2EA20,	0x3,	0,	0x2,	0x1,	1,	0x4,	0x3d,	0x6 },
-	{ 0,		0,	0,		0,	0,	0,	0,	0,	0,	0,	0   },
-};
-
-static const struct ath79_pll_config pll_cfg_40MHz[] = {
-	{ 22050,	0x1b,	0x6152,		0x3,	0,	0x6,	0x2,	3,	0x4,	0x32,	0x6 },
-	{ 32000,	0x1d,	0x1F6FD,	0x3,	0,	0x6,	0x2,	3,	0x4,	0x32,	0x6 },
-	{ 44100,	0x1b,	0x6152,		0x3,	0,	0x6,	0x2,	2,	0x4,	0x32,	0x6 },
-	{ 48000,	0x1d,	0x1F6FD,	0x3,	0,	0x6,	0x2,	2,	0x4,	0x32,	0x6 },
-	{ 88200,	0x1b,	0x6152,		0x3,	0,	0x6,	0x2,	1,	0x4,	0x32,	0x6 },
-	{ 96000,	0x1d,	0x1F6FD,	0x3,	0,	0x6,	0x2,	1,	0x4,	0x32,	0x6 },
-	{ 192000,	0x09,	0x35254,	0x3,	0,	0x2,	0x1,	1,	0x4,	0x3d,	0x6 },
-	{ 0,		0,	0,		0,	0,	0,	0,	0,	0,	0,	0   },
-};
+#define PLL_REFDIV		1
+#define PLL_EXTDIV		2
+#define PLL_POSTPLDIV	3
 
 static void ath79_pll_set_target_div(u32 div_int, u32 div_frac)
 {
@@ -212,22 +191,6 @@ static u32 ath79_audiodpll_sqsum_dvc_get(void)
 	return t;
 }
 
-void ath79_stereo_set_posedge(u32 posedge)
-{
-	u32 t;
-
-	spin_lock(&ath79_stereo_lock);
-
-	t = ath79_stereo_rr(AR934X_STEREO_REG_CONFIG);
-	t &= ~(AR934X_STEREO_CONFIG_POSEDGE_MASK
-		<< AR934X_STEREO_CONFIG_POSEDGE_SHIFT);
-	t |= (posedge & AR934X_STEREO_CONFIG_POSEDGE_MASK)
-		<< AR934X_STEREO_CONFIG_POSEDGE_SHIFT;
-	ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, t);
-
-	spin_unlock(&ath79_stereo_lock);
-}
-
 static void ath79_pll_powerup(void)
 {
 	u32 t;
@@ -288,56 +251,30 @@ static bool ath79_audiodpll_meas_done_is_set(void)
 	return ( status ? true : false);
 }
 
-static void ath79_load_pll_regs(const struct ath79_pll_config *cfg)
-{
-	/* Set PLL regs */
-	ath79_pll_set_postpllpwd(cfg->postpllpwd);
-	ath79_pll_bypass(cfg->bypass);
-	ath79_pll_set_ext_div(cfg->extdiv);
-	ath79_pll_set_refdiv(cfg->refdiv);
-	ath79_pll_set_target_div(cfg->divint, cfg->divfrac);
-	/* Set DPLL regs */
-	ath79_audiodpll_range_set();
-	ath79_audiodpll_phase_shift_set(cfg->shift);
-	ath79_audiodpll_set_gains(cfg->kd, cfg->ki);
-	/* Set Stereo regs */
-	ath79_stereo_set_posedge(cfg->posedge);
-	return;
-}
-
 int ath79_audio_set_freq(int freq)
 {
 	struct clk *clk;
 	const struct ath79_pll_config *cfg;
+	
+	u32 clk_rate;
+	u32 base_rate;
+	u32 div_int, div_frac;
 
 	clk = clk_get(NULL, "ref");
 
-	/* PLL settings can have 2 different values depending
-	 * on the clock rate */
-	switch(clk_get_rate(clk)) {
-	case 25*1000*1000:
-		cfg = &pll_cfg_25MHz[0];
-		break;
-	case 40*1000*1000:
-		cfg = &pll_cfg_40MHz[0];
-		break;
-	default:
-		printk(KERN_ERR "%s: Clk speed %lu.%03lu not supported\n", __FUNCTION__,
-			clk_get_rate(clk)/1000000,(clk_get_rate(clk)/1000) % 1000);
-		return -EIO;
+	clk_rate = clk_get_rate(clk);
+
+	if (clk_rate != 25000000 && clk_rate != 40000000) {
+		printk("Wrong clk_rate of %u\n", clk_rate);
+		return -EINVAL;
 	}
 
-	/* Search the frequency in the pll table */
-	do {
-		if(cfg->rate == freq)
-			break;
-		cfg++;
-	} while(cfg->rate != 0);
-	if (cfg->rate == 0) {
-		printk(KERN_ERR "%s: Freq %d not supported\n",
-			__FUNCTION__, freq);
-		return -ENOTSUPP;
-	}
+	base_rate = clk_rate / (PLL_REFDIV * (1 << PLL_POSTPLDIV) * PLL_EXTDIV);
+
+	div_int = freq / base_rate;
+	div_frac = DIV_ROUND_CLOSEST_ULL((u64)(freq - base_rate * div_int) * (1 << 18), base_rate);
+
+	printk("Setting MCLK to %u, clk_rate %u, base_rate %d, div_int %u, div_frac %u", freq, clk_rate, base_rate, div_int, div_frac);
 
 	/* Loop until we converged to an acceptable value */
 	do {
@@ -345,7 +282,20 @@ int ath79_audio_set_freq(int freq)
 		ath79_pll_powerdown();
 		udelay(100);
 
-		ath79_load_pll_regs(cfg);
+		/* Set PLL regs */
+		ath79_pll_set_postpllpwd(PLL_POSTPLDIV);
+		ath79_pll_bypass(0);
+		ath79_pll_set_ext_div(PLL_EXTDIV);
+		ath79_pll_set_refdiv(PLL_REFDIV);
+		ath79_pll_set_target_div(div_int, div_frac);
+		/* Set DPLL regs */
+		ath79_audiodpll_range_set();
+		ath79_audiodpll_phase_shift_set(6);
+		
+		if (clk_rate == 25000000)
+			ath79_audiodpll_set_gains(61, 4);
+		else if (clk_rate == 40000000)
+			ath79_audiodpll_set_gains(50, 4);
 
 		ath79_pll_powerup();
 		ath79_audiodpll_do_meas_clear();

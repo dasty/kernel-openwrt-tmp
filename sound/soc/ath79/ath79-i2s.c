@@ -31,6 +31,9 @@
 
 #define DRV_NAME	"ath79-i2s"
 
+#define MCLK_RATE_48kHz		24576000UL
+#define MCLK_RATE_44_1kHz	22579200UL
+
 DEFINE_SPINLOCK(ath79_stereo_lock);
 
 void ath79_stereo_reset(void)
@@ -44,6 +47,22 @@ void ath79_stereo_reset(void)
 	spin_unlock(&ath79_stereo_lock);
 }
 EXPORT_SYMBOL(ath79_stereo_reset);
+
+static void ath79_stereo_set_posedge(u32 posedge)
+{
+	u32 t;
+
+	spin_lock(&ath79_stereo_lock);
+
+	t = ath79_stereo_rr(AR934X_STEREO_REG_CONFIG);
+	t &= ~(AR934X_STEREO_CONFIG_POSEDGE_MASK
+		<< AR934X_STEREO_CONFIG_POSEDGE_SHIFT);
+	t |= (posedge & AR934X_STEREO_CONFIG_POSEDGE_MASK)
+		<< AR934X_STEREO_CONFIG_POSEDGE_SHIFT;
+	ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, t);
+
+	spin_unlock(&ath79_stereo_lock);
+}
 
 static int ath79_i2s_startup(struct snd_pcm_substream *substream,
 			      struct snd_soc_dai *dai)
@@ -82,42 +101,13 @@ static int ath79_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 	return 0;
 }
 
-/*
- * This table is only valid for a MCLK of 24576000Hz or 22579200Hz.
- * See also datasheet AR9344.pdf page 205.
- * TODO: Make this a real calculation based on the actual MCLK rate,
- *       channel size and rate.
- */
-static u32 ath79_i2s_calculate_posedge(struct snd_pcm_hw_params *params)
+static u32 ath79_i2s_calculate_posedge(u32 mclk_rate, u32 rate)
 {
-	switch(params_rate(params)) {
-		case 22050:
-			return 8;
-			break;
+	u32 posedge = mclk_rate / (rate * 32 * 2 * 2);
 
-		case 32000:
-			return 6;
-			break;
+	printk("Using posedge of %u\n", posedge);
 
-		case 44100:
-		case 48000:
-			return 4;
-			break;
-
-		case 88200:
-		case 96000:
-			return 2;
-			break;
-
-		case 192000:
-			return 1;
-			break;
-
-		default:
-			printk("Undefined POSEDGE value for a rate of %u, using fallback value of 4\n", params_rate(params));
-			return 4;
-			break;
-	}
+	return posedge;
 }
 
 static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
@@ -125,6 +115,8 @@ static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 				struct snd_soc_dai *dai)
 {
 	u32 mask = 0, t;
+	u32 rate = params_rate(params);
+	u32 mclk_rate = (rate % 16000) == 0 ? MCLK_RATE_48kHz : MCLK_RATE_44_1kHz;
 
 	printk("Called %s with rate %d\n", __FUNCTION__, params_rate(params));
 
@@ -137,9 +129,10 @@ static int ath79_i2s_hw_params(struct snd_pcm_substream *substream,
 		/* TODO: Implement the switching of an external PLL and remove this printk() */
 		printk("Using external MCLK, no PLL switching implemented.\n");
 
-		ath79_stereo_set_posedge(ath79_i2s_calculate_posedge(params));
+		ath79_stereo_set_posedge(ath79_i2s_calculate_posedge(mclk_rate, rate));
 	} else {
-		ath79_audio_set_freq(params_rate(params));
+		ath79_audio_set_freq(mclk_rate);
+		ath79_stereo_set_posedge(ath79_i2s_calculate_posedge(mclk_rate, rate));
 	}
 
 	switch(params_format(params)) {
@@ -256,10 +249,10 @@ static int ath79_i2s_drv_probe(struct platform_device *pdev)
 		ath79_stereo_wr(AR934X_STEREO_REG_CONFIG, stereo_config);
 
 
-		if (IS_ENABLED(CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK))
-			ath79_stereo_set_posedge(4);
-		else
-			ath79_audio_set_freq(48000);
+		if (!IS_ENABLED(CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK))
+			ath79_audio_set_freq(MCLK_RATE_48kHz);
+
+		ath79_stereo_set_posedge(ath79_i2s_calculate_posedge(MCLK_RATE_48kHz, 48000));
 
 
 		ath79_stereo_reset();

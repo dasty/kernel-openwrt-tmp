@@ -24,7 +24,6 @@
 #include <sound/soc.h>
 #include <sound/soc-dai.h>
 
-extern spinlock_t ath79_stereo_lock;
 void ath79_stereo_reset(void);
 
 #endif
