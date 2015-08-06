@@ -71,7 +71,6 @@ static int ath79_i2s_startup(struct snd_pcm_substream *substream,
 	if (!dai->active) {
 		unsigned stereo_config = AR934X_STEREO_CONFIG_SPDIF_ENABLE |
 									AR934X_STEREO_CONFIG_I2S_ENABLE |
-									AR934X_STEREO_CONFIG_SAMPLE_CNT_CLEAR_TYPE |
 									AR934X_STEREO_CONFIG_MASTER;
 
 		if (IS_ENABLED(CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK))
@@ -240,7 +239,6 @@ static int ath79_i2s_drv_probe(struct platform_device *pdev)
 	if (IS_ENABLED(CONFIG_SND_ATH79_SOC_PERSISTENT_CLOCKS)) {
 		stereo_config |= AR934X_STEREO_CONFIG_SPDIF_ENABLE |
 							AR934X_STEREO_CONFIG_I2S_ENABLE |
-							AR934X_STEREO_CONFIG_SAMPLE_CNT_CLEAR_TYPE |
 							AR934X_STEREO_CONFIG_MASTER;
 
 		if (IS_ENABLED(CONFIG_SND_ATH79_SOC_USE_EXTERNAL_MCLK))
