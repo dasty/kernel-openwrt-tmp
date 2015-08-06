@@ -251,10 +251,32 @@ static bool ath79_audiodpll_meas_done_is_set(void)
 	return ( status ? true : false);
 }
 
+/* This just changes the div_int and div_frac part of the PLL so it
+	can be used for skewing, it does not enable or wait for the PLL
+	to converge to the target value. */
+int ath79_audio_skew_freq(int freq)
+{
+	struct clk *clk;
+
+	u32 clk_rate;
+	u32 div_int, div_frac;
+	u32 base_rate;
+
+	clk = clk_get(NULL, "ref");
+	clk_rate = clk_get_rate(clk);
+	base_rate = clk_rate / (PLL_REFDIV * (1 << PLL_POSTPLDIV) * PLL_EXTDIV);
+
+	div_int = freq / base_rate;
+	div_frac = DIV_ROUND_CLOSEST_ULL((u64)(freq - base_rate * div_int) * (1 << 18), base_rate);
+
+	ath79_pll_set_target_div(div_int, div_frac);
+
+	return 0;
+}
+
 int ath79_audio_set_freq(int freq)
 {
 	struct clk *clk;
-	const struct ath79_pll_config *cfg;
 	
 	u32 clk_rate;
 	u32 base_rate;

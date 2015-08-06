@@ -17,3 +17,4 @@
  */
 
 int ath79_audio_set_freq(int);
+int ath79_audio_skew_freq(int freq);
