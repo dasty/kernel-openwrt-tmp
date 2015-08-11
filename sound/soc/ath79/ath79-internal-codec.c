@@ -101,10 +101,12 @@ static int ath79_volume_ctrl_put(struct snd_kcontrol *kcontrol,
 
 	t &= ~(AR934X_STEREO_VOLUME_MASK << AR934X_STEREO_VOLUME_CH0);
 	t &= ~(AR934X_STEREO_VOLUME_MASK << AR934X_STEREO_VOLUME_CH1);
+/*
 	t |= int_to_reg(ucontrol->value.integer.value[0])
 		<< AR934X_STEREO_VOLUME_CH0;
 	t |= int_to_reg(ucontrol->value.integer.value[1])
 		 << AR934X_STEREO_VOLUME_CH1;
+*/
 	ath79_stereo_wr(AR934X_STEREO_REG_VOLUME, t);
 	return 1;
 }
