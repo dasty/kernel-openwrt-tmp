@@ -296,7 +296,7 @@ int ath79_audio_set_freq(int freq)
 	div_int = freq / base_rate;
 	div_frac = DIV_ROUND_CLOSEST_ULL((u64)(freq - base_rate * div_int) * (1 << 18), base_rate);
 
-	printk("Setting MCLK to %u, clk_rate %u, base_rate %d, div_int %u, div_frac %u", freq, clk_rate, base_rate, div_int, div_frac);
+	printk("Setting MCLK to %u, clk_rate %u, base_rate %d, div_int %u, div_frac %u\n", freq, clk_rate, base_rate, div_int, div_frac);
 
 	/* Loop until we converged to an acceptable value */
 	do {
