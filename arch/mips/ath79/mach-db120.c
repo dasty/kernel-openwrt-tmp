@@ -44,13 +44,13 @@
 #include "dev-audio.h"
 #include "ath79.h"
 
-#define DB120_GPIO_LED_USB		11
-#define DB120_GPIO_LED_WLAN_5G		12
-#define DB120_GPIO_LED_WLAN_2G		13
-#define DB120_GPIO_LED_STATUS		14
-#define DB120_GPIO_LED_WPS		15
+#define DB120_GPIO_LED_USB		1
+#define DB120_GPIO_LED_WLAN_5G		2
+#define DB120_GPIO_LED_WLAN_2G		3
+#define DB120_GPIO_LED_STATUS		18
+#define DB120_GPIO_LED_WPS		19
 
-#define DB120_GPIO_BTN_WPS		16
+#define DB120_GPIO_BTN_WPS		20
 
 #define DB120_KEYS_POLL_INTERVAL	20	/* msecs */
 #define DB120_KEYS_DEBOUNCE_INTERVAL	(3 * DB120_KEYS_POLL_INTERVAL)
@@ -143,12 +143,12 @@ static struct platform_device db120_tb388_spdif_codec = {
 };
 
 
-#define DB120_GPIO_I2S_MCLK     21
-#define DB120_GPIO_I2S_SD       19
-#define DB120_GPIO_I2S_WS       12
-#define DB120_GPIO_I2S_CLK      13
-#define DB120_GPIO_I2S_MIC_SD       14
-#define DB120_GPIO_SPDIF_OUT        15
+#define DB120_GPIO_I2S_MCLK     15
+#define DB120_GPIO_I2S_SD       12
+#define DB120_GPIO_I2S_WS       13
+#define DB120_GPIO_I2S_CLK      14
+#define DB120_GPIO_I2S_MIC_SD       11
+#define DB120_GPIO_SPDIF_OUT        4
 
 static void __init db120_setup(void)
 {
